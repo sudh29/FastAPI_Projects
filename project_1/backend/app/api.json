@@ -1,0 +1,255 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "Portfolio Tracker", "version": "0.1.0" },
+  "paths": {
+    "/register": {
+      "post": {
+        "summary": "Register",
+        "description": "Registers a new user and initializes their portfolio.\n\nReturns:\n    dict: Confirmation message.",
+        "operationId": "register_register_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UserCreate" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "summary": "Login",
+        "description": "Logs in a user and returns a JWT token.\n\nReturns:\n    dict: Access token and token type.",
+        "operationId": "login_login_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": { "$ref": "#/components/schemas/Body_login_login_post" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/add-money": {
+      "post": {
+        "summary": "Add Money",
+        "description": "Adds money to the user's portfolio balance.\n\nReturns:\n    dict: Confirmation message.",
+        "operationId": "add_money_add_money_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AddMoney" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "OAuth2PasswordBearer": [] }]
+      }
+    },
+    "/buy": {
+      "post": {
+        "summary": "Buy Asset",
+        "description": "Buys a crypto asset and updates the portfolio and transaction log.\n\nReturns:\n    dict: Confirmation message.",
+        "operationId": "buy_asset_buy_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TradeAsset" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "OAuth2PasswordBearer": [] }]
+      }
+    },
+    "/sell": {
+      "post": {
+        "summary": "Sell Asset",
+        "description": "Sells a crypto asset and updates the portfolio and transaction log.\n\nReturns:\n    dict: Confirmation message.",
+        "operationId": "sell_asset_sell_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TradeAsset" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "OAuth2PasswordBearer": [] }]
+      }
+    },
+    "/portfolio": {
+      "get": {
+        "summary": "Get Portfolio",
+        "description": "Retrieves current portfolio overview, including:\n- Available funds\n- Asset breakdown\n- Performance metrics\n\nReturns:\n    dict: Portfolio summary.",
+        "operationId": "get_portfolio_portfolio_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        },
+        "security": [{ "OAuth2PasswordBearer": [] }]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AddMoney": {
+        "properties": { "amount": { "type": "number", "title": "Amount" } },
+        "type": "object",
+        "required": ["amount"],
+        "title": "AddMoney",
+        "description": "Schema for adding money to a user's portfolio.\n\nAttributes:\n    amount (float): The amount of money to be added."
+      },
+      "Body_login_login_post": {
+        "properties": {
+          "grant_type": {
+            "anyOf": [
+              { "type": "string", "pattern": "^password$" },
+              { "type": "null" }
+            ],
+            "title": "Grant Type"
+          },
+          "username": { "type": "string", "title": "Username" },
+          "password": { "type": "string", "title": "Password" },
+          "scope": { "type": "string", "title": "Scope", "default": "" },
+          "client_id": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Client Id"
+          },
+          "client_secret": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Client Secret"
+          }
+        },
+        "type": "object",
+        "required": ["username", "password"],
+        "title": "Body_login_login_post"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": { "$ref": "#/components/schemas/ValidationError" },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "TradeAsset": {
+        "properties": {
+          "symbol": { "type": "string", "title": "Symbol" },
+          "quantity": { "type": "number", "title": "Quantity" }
+        },
+        "type": "object",
+        "required": ["symbol", "quantity"],
+        "title": "TradeAsset",
+        "description": "Schema for buying or selling an asset in the portfolio.\n\nAttributes:\n    symbol (str): The asset symbol (e.g., 'AAPL', 'BTC').\n    quantity (float): The quantity to buy or sell (positive for buy, negative for sell)."
+      },
+      "UserCreate": {
+        "properties": {
+          "username": { "type": "string", "title": "Username" },
+          "password": { "type": "string", "title": "Password" }
+        },
+        "type": "object",
+        "required": ["username", "password"],
+        "title": "UserCreate",
+        "description": "Schema for creating a new user account.\n\nAttributes:\n    username (str): Desired unique username for the user.\n    password (str): Password for the account (should be hashed before storage)."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": { "anyOf": [{ "type": "string" }, { "type": "integer" }] },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": { "type": "string", "title": "Message" },
+          "type": { "type": "string", "title": "Error Type" }
+        },
+        "type": "object",
+        "required": ["loc", "msg", "type"],
+        "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "OAuth2PasswordBearer": {
+        "type": "oauth2",
+        "flows": { "password": { "scopes": {}, "tokenUrl": "token" } }
+      }
+    }
+  }
+}
