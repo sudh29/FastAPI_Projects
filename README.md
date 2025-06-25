@@ -38,3 +38,7 @@ uv sync
 ```bash
 uv pip freeze > requirements.txt
 ```
+
+```bash
+uv run uvicorn main:app --reload --port 8000
+```
