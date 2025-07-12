@@ -1,14 +1,15 @@
-# Chapter 4 - FastAPI Todo App
+# TodoApp - FastAPI Project
 
-This project demonstrates building a Todo application using FastAPI, including authentication, user management, and CRUD operations for todos. It also includes a test suite using pytest.
+This project is a FastAPI-based Todo application with authentication, user management, and CRUD operations for todos. It includes a web interface and a full test suite.
 
 ## Features
 
 - User registration and authentication
-- CRUD operations for todos
 - Admin and user roles
-- Health check endpoint
-- Pytest-based tests
+- CRUD operations for todos
+- HTML templates for web pages
+- Static files for CSS/JS
+- Pytest-based test suite
 
 ## Getting Started
 
@@ -21,13 +22,13 @@ uv pip install -r requirements.txt
 ### Run the application
 
 ```bash
-uv run python -m main
+uv run python -m TodoApp.main
 ```
 
 Or with Uvicorn directly:
 
 ```bash
-uvicorn main:app --reload
+uvicorn TodoApp.main:app --reload
 ```
 
 ### Run tests
@@ -45,7 +46,7 @@ uv run pytest test.py
 ## Project Structure
 
 ```
-chapter_4/
+TodoApp/
 ├── main.py
 ├── routers/
 │   ├── auth.py
@@ -54,6 +55,10 @@ chapter_4/
 │   └── users.py
 ├── models.py
 ├── database.py
+├── templates/
+│   └── ...
+├── static/
+│   └── ...
 ├── test/
 │   └── ...
 ├── README.md
