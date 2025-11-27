@@ -5,7 +5,7 @@ Covers user authentication, JWT token creation, and user retrieval from token.
 """
 
 from .utils import *
-from ..routers.auth import (
+from routers.auth import (
     get_db,
     authenticate_user,
     create_access_token,

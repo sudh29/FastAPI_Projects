@@ -4,9 +4,9 @@ Tests for todo-related API endpoints in the FastAPI application.
 Covers CRUD operations and error handling for todo items.
 """
 
-from ..routers.todos import get_db, get_current_user
+from routers.todos import get_db, get_current_user
 from fastapi import status
-from ..models import Todos
+from models import Todos
 from .utils import *
 
 app.dependency_overrides[get_db] = override_get_db
@@ -15,7 +15,7 @@ app.dependency_overrides[get_current_user] = override_get_current_user
 
 def test_read_all_authenticated(test_todo) -> None:
     """Test retrieving all todos for an authenticated user."""
-    response = client.get("/")
+    response = client.get("/todos/")
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == [
         {
@@ -31,7 +31,7 @@ def test_read_all_authenticated(test_todo) -> None:
 
 def test_read_one_authenticated(test_todo) -> None:
     """Test retrieving a single todo by ID for an authenticated user."""
-    response = client.get("/todo/1")
+    response = client.get("/todos/todo/1")
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == {
         "complete": False,
@@ -45,7 +45,7 @@ def test_read_one_authenticated(test_todo) -> None:
 
 def test_read_one_authenticated_not_found() -> None:
     """Test retrieving a non-existent todo returns 404."""
-    response = client.get("/todo/999")
+    response = client.get("/todos/todo/999")
     assert response.status_code == 404
     assert response.json() == {"detail": "Todo not found."}
 
@@ -59,7 +59,7 @@ def test_create_todo(test_todo) -> None:
         "complete": False,
     }
 
-    response = client.post("/todo/", json=request_data)
+    response = client.post("/todos/todo/", json=request_data)
     assert response.status_code == 201
 
     db = TestingSessionLocal()
@@ -79,7 +79,7 @@ def test_update_todo(test_todo) -> None:
         "complete": False,
     }
 
-    response = client.put("/todo/1", json=request_data)
+    response = client.put("/todos/todo/1", json=request_data)
     assert response.status_code == 204
     db = TestingSessionLocal()
     model = db.query(Todos).filter(Todos.id == 1).first()
@@ -95,14 +95,14 @@ def test_update_todo_not_found(test_todo) -> None:
         "complete": False,
     }
 
-    response = client.put("/todo/999", json=request_data)
+    response = client.put("/todos/todo/999", json=request_data)
     assert response.status_code == 404
     assert response.json() == {"detail": "Todo not found."}
 
 
 def test_delete_todo(test_todo) -> None:
     """Test deleting an existing todo item."""
-    response = client.delete("/todo/1")
+    response = client.delete("/todos/todo/1")
     assert response.status_code == 204
     db = TestingSessionLocal()
     model = db.query(Todos).filter(Todos.id == 1).first()
@@ -111,6 +111,6 @@ def test_delete_todo(test_todo) -> None:
 
 def test_delete_todo_not_found() -> None:
     """Test deleting a non-existent todo returns 404."""
-    response = client.delete("/todo/999")
+    response = client.delete("/todos/todo/999")
     assert response.status_code == 404
     assert response.json() == {"detail": "Todo not found."}

@@ -7,12 +7,12 @@ Includes database setup, dependency overrides, and pytest fixtures for todos and
 from sqlalchemy import create_engine, text
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.orm import sessionmaker
-from ..database import Base
-from ..main import app
+from database import Base
+from main import app
 from fastapi.testclient import TestClient
 import pytest
-from ..models import Todos, Users
-from ..routers.auth import bcrypt_context
+from models import Todos, Users
+from routers.auth import bcrypt_context
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./testdb.db"
 

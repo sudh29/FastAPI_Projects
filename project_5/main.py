@@ -7,7 +7,8 @@ This module sets up the FastAPI app, initializes the database tables, and includ
 from fastapi import FastAPI
 from models import Base
 from database import engine
-from routers import auth, todos, admin, users
+from routers import auth, todos, admin, users, web
+from starlette.staticfiles import StaticFiles
 
 app = FastAPI()
 
@@ -28,6 +29,9 @@ app.include_router(auth.router)
 app.include_router(todos.router)
 app.include_router(admin.router)
 app.include_router(users.router)
+app.include_router(web.router)
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 if __name__ == "__main__":
     import uvicorn

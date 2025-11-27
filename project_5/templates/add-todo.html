@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        Add New Todo
+    </div>
+    <div class="card-body">
+        <form action="/add-todo" method="POST">
+            <div class="mb-3">
+                <label for="title" class="form-label">Title</label>
+                <input type="text" class="form-control" id="title" name="title" required minlength="3">
+            </div>
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <input type="text" class="form-control" id="description" name="description" required minlength="3"
+                    maxlength="100">
+            </div>
+            <div class="mb-3">
+                <label for="priority" class="form-label">Priority</label>
+                <select class="form-select" id="priority" name="priority">
+                    <option value="1">1 (High)</option>
+                    <option value="2">2</option>
+                    <option value="3" selected>3 (Medium)</option>
+                    <option value="4">4</option>
+                    <option value="5">5 (Low)</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Todo</button>
+            <a href="/" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

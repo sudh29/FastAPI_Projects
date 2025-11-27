@@ -1,69 +1,111 @@
-# Chapter 4 - FastAPI Todo App
+# FastAPI Books Manager
 
-This project demonstrates building a Todo application using FastAPI, including authentication, user management, and CRUD operations for todos. It also includes a test suite using pytest.
+[![Python](https://img.shields.io/badge/Python-3.12%2B-blue.svg)](https://www.python.org/downloads/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.109.0-green.svg)](https://fastapi.tiangolo.com/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-## Features
+A high-performance RESTful API built with FastAPI for managing a book collection, featuring a modern, responsive web interface.
 
-- User registration and authentication
-- CRUD operations for todos
-- Admin and user roles
-- Health check endpoint
-- Pytest-based tests
+## 🌟 Highlights
 
-## Getting Started
+- 🚀 **High Performance** - Built on Starlette and Pydantic
+- 🎨 **Modern GUI** - Beautiful, responsive interface with glassmorphism design
+- 🐳 **Docker Ready** - Production-optimized Docker setup
+- 📄 **Interactive Docs** - Automatic Swagger UI documentation
+- 🔍 **Search & Filter** - Real-time filtering by title, author, and category
 
-### Install dependencies
+---
+
+## 🚀 Quick Start
+
+### Option 1: Using Docker (Recommended)
+
+**Using Docker Compose:**
+```bash
+# Start the application
+docker-compose up -d --build
+
+# Stop the application
+docker-compose down
+```
+
+**Using Dockerfile:**
+```bash
+# Build the image
+docker build -t fastapi-todo .
+
+# Run the container
+docker run -d -p 8000:8000 --name fastapi-todo fastapi-todo
+
+# View logs
+docker logs -f fastapi-todo
+
+# Stop and remove
+docker stop fastapi-todo
+docker rm fastapi-todo
+```
+
+### Option 2: Running Locally (using uv)
 
 ```bash
+# Create virtual environment
+uv venv
+
+# Activate virtual environment
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+
+# Install dependencies
 uv pip install -r requirements.txt
-```
 
-### Run the application
-
-```bash
-uv run python -m main
-```
-
-Or with Uvicorn directly:
-
-```bash
+# Run the application
 uvicorn main:app --reload
 ```
 
-### Run tests
+Visit **http://localhost:8000** to use the application.
 
-```bash
-uv run pytest
+---
+
+## 🔌 API Endpoints
+
+The API provides the following endpoints:
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/books` | Get all books |
+| `GET` | `/books/{title}` | Get book by title |
+| `GET` | `/books/` | Filter books by category |
+| `GET` | `/books/byauthor/` | Filter books by author |
+| `POST` | `/books/create_book` | Add a new book |
+| `PUT` | `/books/update_book` | Update an existing book |
+| `DELETE` | `/books/delete_book/{title}` | Delete a book |
+
+You can also explore the interactive API documentation at **http://localhost:8000/docs**.
+
+---
+
+## 💻 Tech Stack
+
+- **Backend**: FastAPI, Uvicorn
+- **Frontend**: HTML5, CSS3 (Glassmorphism), Vanilla JavaScript
+- **Containerization**: Docker, Docker Compose
+- **Python**: 3.12+
+
+## 📂 Project Structure
+
+```
+project_1/
+├── main.py              # FastAPI application
+├── static/              # Frontend assets
+│   ├── index.html      # Main GUI
+│   ├── style.css       # Styles
+│   └── script.js       # Frontend logic
+├── Dockerfile          # Docker build instructions
+├── docker-compose.yml  # Docker services configuration
+├── requirements.txt    # Python dependencies
+└── README.md           # Documentation
 ```
 
-Or for a specific test file:
+## 📝 License
 
-```bash
-uv run pytest test.py
-```
-
-## Project Structure
-
-```
-chapter_4/
-├── main.py
-├── routers/
-│   ├── auth.py
-│   ├── todos.py
-│   ├── admin.py
-│   └── users.py
-├── models.py
-├── database.py
-├── test/
-│   └── ...
-├── README.md
-├── requirements.txt
-```
-
-## API Endpoints
-
-- `/auth/` - Authentication routes
-- `/todos/` - Todo CRUD routes
-- `/admin/` - Admin-only routes
-- `/user/` - User profile routes
-- `/healthy` - Health check
+This project is licensed under the MIT License.
