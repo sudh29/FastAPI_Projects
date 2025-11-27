@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <div class="background-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>Task Manager</h1>
+            <p>Organize your day with style</p>
+        </header>
+
+        <div class="glass-panel input-panel">
+            <form id="task-form">
+                <div class="input-group">
+                    <input type="text" id="task-title" placeholder="What needs to be done?" required>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="task-desc" placeholder="Description (optional)">
+                </div>
+                <button type="submit" class="btn-add">
+                    <i class="fas fa-plus"></i> Add Task
+                </button>
+            </form>
+        </div>
+
+        <div class="tasks-container">
+            <div class="tasks-header">
+                <h2>My Tasks</h2>
+                <span class="task-count" id="task-count">0 tasks</span>
+            </div>
+            <div id="tasks-list" class="tasks-list">
+                <!-- Tasks will be added here dynamically -->
+                <div class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+
+</html>
