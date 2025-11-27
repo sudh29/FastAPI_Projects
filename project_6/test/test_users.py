@@ -5,7 +5,7 @@ Covers user retrieval, password change, and phone number update functionality.
 """
 
 from .utils import *
-from ..routers.users import get_db, get_current_user
+from routers.users import get_db, get_current_user
 from fastapi import status
 
 app.dependency_overrides[get_db] = override_get_db
@@ -17,7 +17,7 @@ def test_return_user(test_user) -> None:
     response = client.get("/user")
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["username"] == "sudhanshu29"
-    assert response.json()["email"] == "sudhanshu@email.com"
+    assert response.json()["email"] == "sudhanshu29@email.com"
     assert response.json()["first_name"] == "Sudhanshu"
     assert response.json()["last_name"] == "Chaudhary"
     assert response.json()["role"] == "admin"

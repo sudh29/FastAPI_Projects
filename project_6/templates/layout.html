@@ -1,11 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', path='/css/base.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', path='/css/bootstrap.css') }}">
-    <meta charset="UTF-8">
-    <title>TodoApp</title>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', path='/css/base.css') }}">
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', path='/css/bootstrap.css') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>TodoApp</title>
 </head>
+
 <body>
 
   {% include 'navbar.html' %}
@@ -14,9 +19,10 @@
 
   {% endblock %}
 
-    <script src="{{ url_for('static', path='/js/jquery-slim.js') }}"></script>
-    <script src="{{ url_for('static', path='/js/popper.js') }}"></script>
-    <script src="{{ url_for('static', path='/js/bootstrap.js') }}"></script>
-    <script src="{{ url_for('static', path='/js/base.js') }}" defer></script>
+  <script src="{{ url_for('static', path='/js/jquery-slim.js') }}"></script>
+  <script src="{{ url_for('static', path='/js/popper.js') }}"></script>
+  <script src="{{ url_for('static', path='/js/bootstrap.js') }}"></script>
+  <script src="{{ url_for('static', path='/js/base.js') }}" defer></script>
 </body>
+
 </html>
