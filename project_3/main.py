@@ -1,5 +1,8 @@
-from fastapi import FastAPI, Depends, HTTPException, status, Path
-from typing import Annotated
+from fastapi import FastAPI, Depends, HTTPException, status, Path, Request
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from typing import Annotated, Optional
 from sqlalchemy.orm import Session
 import models
 from models import Todos
@@ -13,19 +16,39 @@ class TodoRequest(BaseModel):
     """
 
     title: str = Field(min_length=3)
-    description: str = Field(min_length=3, max_length=100)
+    description: Optional[str] = Field(default=None, max_length=100)
     priority: int = Field(gt=0, le=6)
     complete: bool
 
 
 app = FastAPI()
 
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
+
 models.Base.metadata.create_all(bind=engine)
 
 db_dependency = Annotated[Session, Depends(get_db)]
 
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
+async def read_root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+
+class TodoResponse(BaseModel):
+    id: int
+    title: str
+    description: Optional[str] = None
+    priority: int
+    complete: bool
+    owner_id: Optional[int] = None
+
+    class Config:
+        from_attributes = True
+
+
+@app.get("/todos", response_model=list[TodoResponse], status_code=status.HTTP_200_OK)
 async def read_all(db: db_dependency):
     return db.query(Todos).all()
 
@@ -46,7 +69,7 @@ async def create_todo(db: db_dependency, todo_request: TodoRequest):
     """
     Create a new todo item.
     """
-    todo_model = Todos(**todo_request.dict())
+    todo_model = Todos(**todo_request.model_dump())
     db.add(todo_model)
     db.commit()
     db.refresh(todo_model)
@@ -92,7 +115,7 @@ async def delete_todo(db: db_dependency, todo_id: int = Path(gt=0)):
     todo_model = db.query(Todos).filter(Todos.id == todo_id).first()
     if todo_model is None:
         raise HTTPException(status_code=404, detail="Todo not found.")
-    db.query(Todos).filter(Todos.id == todo_id).delete()
+    db.delete(todo_model)
     db.commit()
 
 
