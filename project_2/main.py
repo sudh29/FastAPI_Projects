@@ -1,9 +1,15 @@
 from typing import Optional, List
-from fastapi import FastAPI, Path, Query, HTTPException
+from fastapi import FastAPI, Path, Query, HTTPException, Request
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 from starlette import status
 
 app: FastAPI = FastAPI()
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
 
 
 class Book(BaseModel):
@@ -96,26 +102,36 @@ BOOKS: List[Book] = [
 ]
 
 
+@app.get("/", response_class=HTMLResponse)
+async def read_root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+
 @app.get("/books", status_code=status.HTTP_200_OK)
-async def read_all_books() -> List[Book]:
+async def read_all_books(
+    rating: Optional[int] = Query(None, gt=0, lt=6),
+    published_date: Optional[int] = Query(None, gt=1999, lt=2031),
+) -> List[Book]:
     """
-    Get all books in the collection.
-    Returns:
-        list[Book]: List of all books.
+    Get all books in the collection, optionally filtered by rating or published date.
     """
-    return BOOKS
+    books_to_return = BOOKS
+
+    if rating is not None:
+        books_to_return = [book for book in books_to_return if book.rating == rating]
+
+    if published_date is not None:
+        books_to_return = [
+            book for book in books_to_return if book.published_date == published_date
+        ]
+
+    return books_to_return
 
 
 @app.get("/books/{book_id}", status_code=status.HTTP_200_OK)
 async def read_book(book_id: int = Path(gt=0)) -> Book:
     """
     Get a book by its ID.
-    Args:
-        book_id (int): The ID of the book to retrieve.
-    Returns:
-        Book: The book with the given ID.
-    Raises:
-        HTTPException: If the book is not found.
     """
     for book in BOOKS:
         if book.id == book_id:
@@ -123,77 +139,46 @@ async def read_book(book_id: int = Path(gt=0)) -> Book:
     raise HTTPException(status_code=404, detail="Item not found")
 
 
-@app.get("/books/", status_code=status.HTTP_200_OK)
-async def read_book_by_rating(book_rating: int = Query(gt=0, lt=6)) -> List[Book]:
-    """
-    Get all books with a specific rating.
-    Args:
-        book_rating (int): The rating to filter books by.
-    Returns:
-        list[Book]: List of books with the given rating.
-    """
-    books_to_return: List[Book] = []
-    for book in BOOKS:
-        if book.rating == book_rating:
-            books_to_return.append(book)
-    return books_to_return
-
-
-@app.get("/books/publish/", status_code=status.HTTP_200_OK)
-async def read_books_by_publish_date(
-    published_date: int = Query(gt=1999, lt=2031),
-) -> List[Book]:
-    """
-    Get all books published in a specific year.
-    Args:
-        published_date (int): The year to filter books by.
-    Returns:
-        list[Book]: List of books published in the given year.
-    """
-    books_to_return: List[Book] = []
-    for book in BOOKS:
-        if book.published_date == published_date:
-            books_to_return.append(book)
-    return books_to_return
-
-
 @app.post("/create-book", status_code=status.HTTP_201_CREATED)
-async def create_book(book_request: BookRequest) -> None:
+async def create_book(book_request: BookRequest) -> Book:
     """
     Create a new book and add it to the collection.
-    Args:
-        book_request (BookRequest): The book data to create.
     """
     new_book = Book(**book_request.model_dump())
-    BOOKS.append(find_book_id(new_book))
+    new_book = find_book_id(new_book)
+    BOOKS.append(new_book)
+    return new_book
 
 
 def find_book_id(book: Book) -> Book:
     """
     Assign a new ID to the book based on the last book in the collection.
-    Args:
-        book (Book): The book to assign an ID to.
-    Returns:
-        Book: The book with the assigned ID.
     """
     book.id = 1 if len(BOOKS) == 0 else BOOKS[-1].id + 1
     return book
 
 
 @app.put("/books/update_book", status_code=status.HTTP_204_NO_CONTENT)
-async def update_book(book: BookRequest) -> None:
+async def update_book(book_request: BookRequest) -> None:
     """
     Update an existing book in the collection.
-    Args:
-        book (BookRequest): The updated book data.
-    Raises:
-        HTTPException: If the book is not found.
     """
     book_changed = False
     for i in range(len(BOOKS)):
-        if BOOKS[i].id == book.id:
-            BOOKS[i] = book
+        if BOOKS[i].id == book_request.id:
+            # Create a new Book instance with the updated data
+            # We assume book_request contains all necessary fields
+            BOOKS[i] = Book(
+                id=book_request.id,
+                title=book_request.title,
+                author=book_request.author,
+                description=book_request.description,
+                rating=book_request.rating,
+                published_date=book_request.published_date,
+            )
             book_changed = True
+            break
+
     if not book_changed:
         raise HTTPException(status_code=404, detail="Item not found")
 
@@ -202,10 +187,6 @@ async def update_book(book: BookRequest) -> None:
 async def delete_book(book_id: int = Path(gt=0)) -> None:
     """
     Delete a book from the collection by ID.
-    Args:
-        book_id (int): The ID of the book to delete.
-    Raises:
-        HTTPException: If the book is not found.
     """
     book_changed = False
     for i in range(len(BOOKS)):
