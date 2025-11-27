@@ -14,8 +14,7 @@ RUN apk add --no-cache --virtual .build-deps \
 
 # Copy requirements and install into a temporary directory
 COPY requirements.txt .
-RUN pip install --no-cache-dir --prefix=/install -r requirements.txt && \
-    pip install --no-cache-dir --prefix=/install gunicorn
+RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
 # =========================
 # Stage 2 — Runtime
@@ -24,7 +23,7 @@ FROM python:3.12-alpine
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PORT=5000
+    PORT=8000
 
 WORKDIR /app
 
@@ -34,7 +33,7 @@ RUN apk add --no-cache tini
 # Copy dependencies from builder
 COPY --from=builder /install /usr/local
 
-# Copy Flask application files
+# Copy application files
 COPY . .
 
 # Expose port
@@ -43,5 +42,5 @@ EXPOSE ${PORT}
 # Use Tini for proper signal handling
 ENTRYPOINT ["/sbin/tini", "--"]
 
-# Run gunicorn server for Flask
-CMD ["sh", "-c", "gunicorn --workers 2 --bind 0.0.0.0:${PORT} app:app"]
+# Run uvicorn server for FastAPI
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT}"]

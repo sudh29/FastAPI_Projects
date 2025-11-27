@@ -1,6 +1,19 @@
 from fastapi import Body, FastAPI
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 app: FastAPI = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 BOOKS: list[dict[str, str]] = [
     {"title": "Title One", "author": "Author One", "category": "science"},
@@ -13,12 +26,8 @@ BOOKS: list[dict[str, str]] = [
 
 
 @app.get("/")
-def main_page() -> dict[str, str]:
-    """
-    Root endpoint for the Books API.
-    Returns a welcome message.
-    """
-    return {"message": "Welcome to the Books API!"}
+async def main_page():
+    return FileResponse("static/index.html")
 
 
 @app.get("/books")
