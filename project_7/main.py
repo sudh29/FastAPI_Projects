@@ -1,180 +1,242 @@
-# Import necessary FastAPI and Python modules
-from fastapi import FastAPI, HTTPException, status, Request, Depends
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, HTTPException, status, Depends, Request
+from fastapi.responses import JSONResponse, PlainTextResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.exceptions import RequestValidationError
-from pydantic import BaseModel
-from typing import List, Optional
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from pydantic import BaseModel, Field, conint, confloat
+from typing import Dict, List, Optional, Tuple
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
-from fastapi.responses import PlainTextResponse
-from fastapi.security import HTTPBasic, HTTPBasicCredentials
 import secrets
 import logging
 import asyncio
+import time
+import os
 
-# Initialize FastAPI app
-app = FastAPI(title="Project 2")
-
-# Set up basic logging for error tracking
+# Configure logging
 logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+app = FastAPI(title="Project 7 - Improved Inventory Service")
+
+# Mount static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
-# Define the Product data model using Pydantic
-class Product(BaseModel):
-    id: int  # Unique identifier for the product
-    name: str  # Name of the product
-    price: float  # Price of the product
-    description: Optional[str] = None  # Optional description
+@app.get("/")
+async def read_index():
+    return FileResponse("static/index.html")
 
 
-# In-memory storage for products using a dictionary for O(1) access
-# Key: product id, Value: Product object
-db: dict[int, Product] = {}
-# Async lock to ensure concurrency safety for db operations
-db_lock = asyncio.Lock()
-
-# Set up rate limiting using slowapi (limits requests per IP)
+# Rate limiter
 limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
 
-# Set up HTTP Basic authentication
+# Basic auth
 security = HTTPBasic()
-# Demo credentials (in production, use a secure user store)
-USERNAME = "admin"
-PASSWORD = "admin"
+USERNAME = os.getenv("API_USER", "admin")
+PASSWORD = os.getenv("API_PASS", "admin")
 
 
 def authenticate(credentials: HTTPBasicCredentials = Depends(security)):
-    """
-    Authenticate user using HTTP Basic Auth.
-    Raises 401 if credentials are invalid.
-    """
-    correct_username = secrets.compare_digest(credentials.username, USERNAME)
-    correct_password = secrets.compare_digest(credentials.password, PASSWORD)
-    if not (correct_username and correct_password):
+    if not (
+        secrets.compare_digest(credentials.username, USERNAME)
+        and secrets.compare_digest(credentials.password, PASSWORD)
+    ):
         raise HTTPException(
-            status_code=401,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials",
             headers={"WWW-Authenticate": "Basic"},
         )
     return credentials
 
 
-# Global exception handler for unhandled errors
-@app.exception_handler(Exception)
-def global_exception_handler(request: Request, exc: Exception):
-    logging.error(f"Unhandled error: {exc}")
-    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
+# Models
+class ProductIn(BaseModel):
+    id: int
+    name: str
+    price: confloat(ge=0)
+    description: Optional[str] = None
+    quantity: conint(ge=0)
 
 
-# Exception handler for validation errors (e.g., invalid request body)
+class Product(ProductIn):
+    version: int = Field(0, description="Optimistic lock revision")
+
+
+class InventoryUpdate(BaseModel):
+    delta: int
+
+
+class ErrorResponse(BaseModel):
+    detail: str
+
+
+# In-memory storage and locks (swap for async DB/Redis in prod)
+_db: Dict[int, Product] = {}
+_locks: Dict[int, asyncio.Lock] = {}
+
+# Cache for low-stock alerts
+_alerts_cache: Dict[int, Tuple[float, List[Product]]] = {}
+_CACHE_TTL = 5.0
+
+
+# Exception handlers
 @app.exception_handler(RequestValidationError)
-def validation_exception_handler(request: Request, exc: RequestValidationError):
-    return JSONResponse(status_code=422, content={"detail": exc.errors()})
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={"detail": exc.errors()},
+    )
 
 
-# Exception handler for rate limit exceeded
 @app.exception_handler(RateLimitExceeded)
-def rate_limit_handler(request: Request, exc: RateLimitExceeded):
-    return PlainTextResponse("Rate limit exceeded", status_code=429)
+async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
+    return PlainTextResponse(
+        "Rate limit exceeded", status_code=status.HTTP_429_TOO_MANY_REQUESTS
+    )
 
 
-# Endpoint: Get all products
-@app.get("/products", response_model=List[Product], status_code=status.HTTP_200_OK)
-@limiter.limit("5/minute")
-async def get_all_products(
-    request: Request, credentials: HTTPBasicCredentials = Depends(authenticate)
-):
-    """
-    Returns a list of all products in the database.
-    Requires authentication and is rate limited.
-    """
-    async with db_lock:
-        return list(db.values())
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Unhandled error: {exc}")
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={"detail": "Internal server error"},
+    )
 
 
-# Endpoint: Get a single product by ID
-@app.get(
-    "/products/{product_id}", response_model=Product, status_code=status.HTTP_200_OK
+# CRUD Endpoints
+@limiter.limit("10/minute")
+@app.post(
+    "/products",
+    response_model=Product,
+    status_code=status.HTTP_201_CREATED,
+    responses={409: {"model": ErrorResponse}},
 )
-@limiter.limit("5/minute")
-async def get_one_product(
-    request: Request,
-    product_id: int,
-    credentials: HTTPBasicCredentials = Depends(authenticate),
-):
-    """
-    Returns a single product by its ID.
-    Raises 404 if not found. Requires authentication and is rate limited.
-    """
-    async with db_lock:
-        product = db.get(product_id)
-        if product:
-            return product
-        raise HTTPException(status_code=404, detail="Product not found")
-
-
-# Endpoint: Create a new product
-@app.post("/products", response_model=Product, status_code=status.HTTP_201_CREATED)
-@limiter.limit("5/minute")
 async def create_product(
-    request: Request,
-    product: Product,
-    credentials: HTTPBasicCredentials = Depends(authenticate),
+    request: Request, product_in: ProductIn, credentials=Depends(authenticate)
 ):
-    """
-    Creates a new product. Product ID must be unique.
-    Raises 400 if product with the same ID exists.
-    Requires authentication and is rate limited.
-    """
-    async with db_lock:
-        if product.id in db:
+    lock = _locks.setdefault(product_in.id, asyncio.Lock())
+    async with lock:
+        if product_in.id in _db:
             raise HTTPException(
-                status_code=400, detail="Product with this ID already exists"
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Product ID already exists.",
             )
-        db[product.id] = product
-        return product
+        prod = Product(**product_in.dict())
+        _db[prod.id] = prod
+        return prod
 
 
-# Endpoint: Update an existing product
-@app.put(
-    "/products/{product_id}", response_model=Product, status_code=status.HTTP_200_OK
+@limiter.limit("20/minute")
+@app.get(
+    "/products/{product_id}",
+    response_model=Product,
+    responses={404: {"model": ErrorResponse}},
 )
-@limiter.limit("5/minute")
-async def update_product(
+async def get_product(
+    request: Request, product_id: int, credentials=Depends(authenticate)
+):
+    prod = _db.get(product_id)
+    if not prod:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Product not found."
+        )
+    return prod
+
+
+@limiter.limit("20/minute")
+@app.patch(
+    "/products/{product_id}/inventory",
+    response_model=Product,
+    responses={404: {"model": ErrorResponse}, 400: {"model": ErrorResponse}},
+)
+async def update_inventory(
     request: Request,
     product_id: int,
-    product: Product,
-    credentials: HTTPBasicCredentials = Depends(authenticate),
+    update: InventoryUpdate,
+    credentials=Depends(authenticate),
 ):
-    """
-    Updates an existing product by ID.
-    Raises 404 if product not found. Requires authentication and is rate limited.
-    """
-    async with db_lock:
-        if product_id in db:
-            db[product_id] = product
-            return product
-        raise HTTPException(status_code=404, detail="Product not found")
+    prod = _db.get(product_id)
+    if not prod:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Product not found."
+        )
+    lock = _locks.setdefault(product_id, asyncio.Lock())
+    async with lock:
+        new_qty = prod.quantity + update.delta
+        if new_qty < 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Insufficient stock."
+            )
+        prod.quantity = new_qty
+        prod.version += 1
+    return prod
 
 
-# Endpoint: Delete a product by ID
-@app.delete("/products/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
+@limiter.limit("20/minute")
+@app.get("/products/alerts", response_model=List[Product])
+async def low_stock_alerts(
+    request: Request, threshold: int = 10, credentials=Depends(authenticate)
+):
+    now = time.monotonic()
+    ts, data = _alerts_cache.get(threshold, (0.0, []))
+    if now - ts < _CACHE_TTL:
+        return data
+    result = [p for p in _db.values() if p.quantity <= threshold]
+    _alerts_cache[threshold] = (now, result)
+    return result
+
+
+@limiter.limit("10/minute")
+@app.get("/products", response_model=List[Product])
+async def list_products(request: Request, credentials=Depends(authenticate)):
+    # No lock needed for read-only
+    return list(_db.values())
+
+
+# Added DELETE endpoint to maintain feature parity with old main.py
 @limiter.limit("5/minute")
+@app.delete("/products/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_product(
     request: Request,
     product_id: int,
     credentials: HTTPBasicCredentials = Depends(authenticate),
 ):
-    """
-    Deletes a product by its ID.
-    Raises 404 if product not found. Requires authentication and is rate limited.
-    """
-    async with db_lock:
-        if product_id in db:
-            del db[product_id]
+    lock = _locks.setdefault(product_id, asyncio.Lock())
+    async with lock:
+        if product_id in _db:
+            del _db[product_id]
+            # Clean up lock if possible, but it's tricky with async locks in use.
+            # For simple in-memory, leaving it is fine or use a more complex manager.
             return
+        raise HTTPException(status_code=404, detail="Product not found")
+
+
+# Added PUT endpoint to maintain feature parity with old main.py
+@limiter.limit("5/minute")
+@app.put(
+    "/products/{product_id}", response_model=Product, status_code=status.HTTP_200_OK
+)
+async def update_product(
+    request: Request,
+    product_id: int,
+    product_in: ProductIn,
+    credentials: HTTPBasicCredentials = Depends(authenticate),
+):
+    lock = _locks.setdefault(product_id, asyncio.Lock())
+    async with lock:
+        if product_id in _db:
+            # Update fields
+            prod = _db[product_id]
+            prod.name = product_in.name
+            prod.price = product_in.price
+            prod.description = product_in.description
+            prod.quantity = product_in.quantity
+            prod.version += 1
+            return prod
         raise HTTPException(status_code=404, detail="Product not found")
 
 
