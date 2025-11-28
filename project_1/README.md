@@ -1,19 +1,19 @@
-# FastAPI Books Manager
+# FastAPI Books API (Basic)
 
 [![Python](https://img.shields.io/badge/Python-3.12%2B-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109.0-green.svg)](https://fastapi.tiangolo.com/)
-[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A high-performance RESTful API built with FastAPI for managing a book collection, featuring a modern, responsive web interface.
+
+A lightweight, foundational RESTful API for managing a book collection. This project demonstrates the core concepts of FastAPI without external database dependencies, using in-memory Python dictionaries.
 
 ## 🌟 Highlights
 
-- 🚀 **High Performance** - Built on Starlette and Pydantic
-- 🎨 **Modern GUI** - Beautiful, responsive interface with glassmorphism design
-- 🐳 **Docker Ready** - Production-optimized Docker setup
-- 📄 **Interactive Docs** - Automatic Swagger UI documentation
-- 🔍 **Search & Filter** - Real-time filtering by title, author, and category
+- ⚡ **Lightweight** - No database required, runs entirely in memory.
+- 🚀 **FastAPI Basics** - Demonstrates path parameters, query parameters, and body requests.
+- 📂 **Dictionary Storage** - Simple data manipulation using Python lists and dictionaries.
+- 🐳 **Docker Ready** - Production-optimized Docker setup.
+- 📄 **Interactive Docs** - Automatic Swagger UI documentation.
 
 ---
 
@@ -21,7 +21,6 @@ A high-performance RESTful API built with FastAPI for managing a book collection
 
 ### Option 1: Using Docker (Recommended)
 
-**Using Docker Compose:**
 ```bash
 # Start the application
 docker-compose up -d --build
@@ -30,29 +29,11 @@ docker-compose up -d --build
 docker-compose down
 ```
 
-**Using Dockerfile:**
-```bash
-# Build the image
-docker build -t fastapi-books-api .
-
-# Run the container
-docker run -d -p 8000:8000 --name fastapi-books-api fastapi-books-api
-
-# View logs
-docker logs -f fastapi-books-api
-
-# Stop and remove
-docker stop fastapi-books-api
-docker rm fastapi-books-api
-```
-
-### Option 2: Running Locally (using uv)
+### Option 2: Running Locally
 
 ```bash
-# Create virtual environment
+# Create and activate virtual environment
 uv venv
-
-# Activate virtual environment
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 
 # Install dependencies
@@ -73,12 +54,12 @@ The API provides the following endpoints:
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `GET` | `/books` | Get all books |
-| `GET` | `/books/{title}` | Get book by title |
+| `GET` | `/books/{book_title}` | Get book by title |
 | `GET` | `/books/` | Filter books by category |
 | `GET` | `/books/byauthor/` | Filter books by author |
 | `POST` | `/books/create_book` | Add a new book |
 | `PUT` | `/books/update_book` | Update an existing book |
-| `DELETE` | `/books/delete_book/{title}` | Delete a book |
+| `DELETE` | `/books/delete_book/{book_title}` | Delete a book |
 
 You can also explore the interactive API documentation at **http://localhost:8000/docs**.
 
@@ -87,7 +68,7 @@ You can also explore the interactive API documentation at **http://localhost:800
 ## 💻 Tech Stack
 
 - **Backend**: FastAPI, Uvicorn
-- **Frontend**: HTML5, CSS3 (Glassmorphism), Vanilla JavaScript
+- **Storage**: In-memory (Python Dicts)
 - **Containerization**: Docker, Docker Compose
 - **Python**: 3.12+
 
@@ -95,17 +76,10 @@ You can also explore the interactive API documentation at **http://localhost:800
 
 ```
 project_1/
-├── main.py              # FastAPI application
+├── main.py              # FastAPI application (Dictionary based)
 ├── static/              # Frontend assets
-│   ├── index.html      # Main GUI
-│   ├── style.css       # Styles
-│   └── script.js       # Frontend logic
 ├── Dockerfile          # Docker build instructions
 ├── docker-compose.yml  # Docker services configuration
 ├── requirements.txt    # Python dependencies
 └── README.md           # Documentation
 ```
-
-## 📝 License
-
-This project is licensed under the MIT License.

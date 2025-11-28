@@ -1,19 +1,19 @@
-# FastAPI Books Manager
+# Enterprise Inventory System
 
 [![Python](https://img.shields.io/badge/Python-3.12%2B-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109.0-green.svg)](https://fastapi.tiangolo.com/)
-[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A high-performance RESTful API built with FastAPI for managing a book collection, featuring a modern, responsive web interface.
+A high-performance, enterprise-grade inventory management system designed for scalability and reliability.
 
 ## 🌟 Highlights
 
-- 🚀 **High Performance** - Built on Starlette and Pydantic
-- 🎨 **Modern GUI** - Beautiful, responsive interface with glassmorphism design
-- 🐳 **Docker Ready** - Production-optimized Docker setup
-- 📄 **Interactive Docs** - Automatic Swagger UI documentation
-- 🔍 **Search & Filter** - Real-time filtering by title, author, and category
+- ⚡ **High Performance** - Optimized for speed with async operations.
+- 🛡️ **Circuit Breakers** - Fault tolerance for external dependencies or high load.
+- 🌊 **Real-time Streaming** - Server-Sent Events (SSE) for live inventory updates.
+- 📦 **Bulk Operations** - Efficient bulk update endpoints.
+- 🔄 **Background Tasks** - Asynchronous processing for webhooks and heavy tasks.
+- 🚦 **Rate Limiting** - Advanced rate limiting per client.
 
 ---
 
@@ -21,7 +21,6 @@ A high-performance RESTful API built with FastAPI for managing a book collection
 
 ### Option 1: Using Docker (Recommended)
 
-**Using Docker Compose:**
 ```bash
 # Start the application
 docker-compose up -d --build
@@ -30,29 +29,11 @@ docker-compose up -d --build
 docker-compose down
 ```
 
-**Using Dockerfile:**
-```bash
-# Build the image
-docker build -t fastapi-inventory .
-
-# Run the container
-docker run -d -p 8000:8000 --name fastapi-inventory fastapi-inventory
-
-# View logs
-docker logs -f fastapi-inventory
-
-# Stop and remove
-docker stop fastapi-inventory
-docker rm fastapi-inventory
-```
-
-### Option 2: Running Locally (using uv)
+### Option 2: Running Locally
 
 ```bash
-# Create virtual environment
+# Create and activate virtual environment
 uv venv
-
-# Activate virtual environment
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 
 # Install dependencies
@@ -62,50 +43,42 @@ uv pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
-Visit **http://localhost:8000** to use the application.
-uv run pytest test.py
+Visit **http://localhost:8000** to access the dashboard.
+
 ---
 
 ## 🔌 API Endpoints
 
-The API provides the following endpoints:
+### Core Inventory
+- `GET /products` - List products
+- `POST /products` - Create product
+- `GET /products/{id}` - Get product details
+- `PUT /products/{id}` - Update product
+- `DELETE /products/{id}` - Delete product
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/books` | Get all books |
-| `GET` | `/books/{title}` | Get book by title |
-| `GET` | `/books/` | Filter books by category |
-| `GET` | `/books/byauthor/` | Filter books by author |
-| `POST` | `/books/create_book` | Add a new book |
-| `PUT` | `/books/update_book` | Update an existing book |
-| `DELETE` | `/books/delete_book/{title}` | Delete a book |
-
-You can also explore the interactive API documentation at **http://localhost:8000/docs**.
+### Advanced Features
+- `POST /products/bulk` - Bulk update inventory
+- `GET /products/{id}/stream` - Subscribe to real-time updates (SSE)
+- `POST /webhook/supplier` - Handle supplier updates via webhook
 
 ---
 
 ## 💻 Tech Stack
 
-- **Backend**: FastAPI, Uvicorn
-- **Frontend**: HTML5, CSS3 (Glassmorphism), Vanilla JavaScript
-- **Containerization**: Docker, Docker Compose
-- **Python**: 3.12+
+- **Backend**: FastAPI
+- **Architecture**: AsyncIO, Event-driven
+- **Resilience**: Circuit Breaker Pattern
+- **Real-time**: Server-Sent Events (SSE)
 
 ## 📂 Project Structure
 
 ```
-project_1/
-├── main.py              # FastAPI application
+project_8/
+├── main.py              # Complex application logic
 ├── static/              # Frontend assets
-│   ├── index.html      # Main GUI
-│   ├── style.css       # Styles
-│   └── script.js       # Frontend logic
-├── Dockerfile          # Docker build instructions
-├── docker-compose.yml  # Docker services configuration
-├── requirements.txt    # Python dependencies
+├── templates/           # Dashboard templates
+├── Dockerfile          # Docker configuration
+├── docker-compose.yml  # Docker Compose setup
+├── requirements.txt    # Dependencies
 └── README.md           # Documentation
 ```
-
-## 📝 License
-
-This project is licensed under the MIT License.

@@ -1,19 +1,18 @@
-# FastAPI Books Manager
+# FastAPI Advanced Todo App
 
 [![Python](https://img.shields.io/badge/Python-3.12%2B-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109.0-green.svg)](https://fastapi.tiangolo.com/)
-[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A high-performance RESTful API built with FastAPI for managing a book collection, featuring a modern, responsive web interface.
+A full-featured Todo application built with **FastAPI**, featuring robust user authentication, role-based access control, and a server-side rendered UI.
 
 ## 🌟 Highlights
 
-- 🚀 **High Performance** - Built on Starlette and Pydantic
-- 🎨 **Modern GUI** - Beautiful, responsive interface with glassmorphism design
-- 🐳 **Docker Ready** - Production-optimized Docker setup
-- 📄 **Interactive Docs** - Automatic Swagger UI documentation
-- 🔍 **Search & Filter** - Real-time filtering by title, author, and category
+- 🔐 **Authentication** - Secure user registration and login (JWT).
+- 👮 **Role-Based Access** - Admin and User roles with specific permissions.
+- 🗄️ **Database Integration** - SQLite database with SQLAlchemy ORM.
+- 🌐 **Web Interface** - Server-side rendered HTML using Jinja2 templates.
+- 🧩 **Modular Design** - Organized code using FastAPI Routers.
 
 ---
 
@@ -21,7 +20,6 @@ A high-performance RESTful API built with FastAPI for managing a book collection
 
 ### Option 1: Using Docker (Recommended)
 
-**Using Docker Compose:**
 ```bash
 # Start the application
 docker-compose up -d --build
@@ -30,29 +28,11 @@ docker-compose up -d --build
 docker-compose down
 ```
 
-**Using Dockerfile:**
-```bash
-# Build the image
-docker build -t fastapi-todo .
-
-# Run the container
-docker run -d -p 8000:8000 --name fastapi-todo fastapi-todo
-
-# View logs
-docker logs -f fastapi-todo
-
-# Stop and remove
-docker stop fastapi-todo
-docker rm fastapi-todo
-```
-
-### Option 2: Running Locally (using uv)
+### Option 2: Running Locally
 
 ```bash
-# Create virtual environment
+# Create and activate virtual environment
 uv venv
-
-# Activate virtual environment
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 
 # Install dependencies
@@ -62,50 +42,49 @@ uv pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
-Visit **http://localhost:8000** to use the application.
+Visit **http://localhost:8000** to access the application.
 
 ---
 
 ## 🔌 API Endpoints
 
-The API provides the following endpoints:
+### Authentication
+- `POST /auth/` - Register new user
+- `POST /auth/token` - Login
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/books` | Get all books |
-| `GET` | `/books/{title}` | Get book by title |
-| `GET` | `/books/` | Filter books by category |
-| `GET` | `/books/byauthor/` | Filter books by author |
-| `POST` | `/books/create_book` | Add a new book |
-| `PUT` | `/books/update_book` | Update an existing book |
-| `DELETE` | `/books/delete_book/{title}` | Delete a book |
+### Todos
+- `GET /todos` - List all todos
+- `POST /todos/todo` - Create todo
+- `PUT /todos/todo/{id}` - Update todo
+- `DELETE /todos/todo/{id}` - Delete todo
 
-You can also explore the interactive API documentation at **http://localhost:8000/docs**.
+### Admin
+- `GET /admin/todo` - View all todos (Admin only)
+- `DELETE /admin/todo/{id}` - Delete any todo (Admin only)
+
+### Users
+- `GET /user` - Get current user profile
+- `PUT /user/password` - Change password
 
 ---
 
 ## 💻 Tech Stack
 
 - **Backend**: FastAPI, Uvicorn
-- **Frontend**: HTML5, CSS3 (Glassmorphism), Vanilla JavaScript
-- **Containerization**: Docker, Docker Compose
-- **Python**: 3.12+
+- **Database**: SQLite, SQLAlchemy
+- **Templating**: Jinja2
+- **Security**: PyJWT, Passlib (Bcrypt)
 
 ## 📂 Project Structure
 
 ```
-project_1/
-├── main.py              # FastAPI application
-├── static/              # Frontend assets
-│   ├── index.html      # Main GUI
-│   ├── style.css       # Styles
-│   └── script.js       # Frontend logic
-├── Dockerfile          # Docker build instructions
-├── docker-compose.yml  # Docker services configuration
-├── requirements.txt    # Python dependencies
+project_5/
+├── main.py              # Application entry point
+├── models.py            # Database models
+├── database.py          # Database configuration
+├── routers/             # API routes (auth, todos, admin, users)
+├── templates/           # HTML templates
+├── static/              # CSS and JS assets
+├── requirements.txt     # Dependencies
 └── README.md           # Documentation
 ```
-
-## 📝 License
-
-This project is licensed under the MIT License.

@@ -1,19 +1,18 @@
-# FastAPI Books Manager
+# Secure Inventory Service
 
 [![Python](https://img.shields.io/badge/Python-3.12%2B-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109.0-green.svg)](https://fastapi.tiangolo.com/)
-[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A high-performance RESTful API built with FastAPI for managing a book collection, featuring a modern, responsive web interface.
+A robust inventory management service focusing on security, reliability, and concurrency control.
 
 ## 🌟 Highlights
 
-- 🚀 **High Performance** - Built on Starlette and Pydantic
-- 🎨 **Modern GUI** - Beautiful, responsive interface with glassmorphism design
-- 🐳 **Docker Ready** - Production-optimized Docker setup
-- 📄 **Interactive Docs** - Automatic Swagger UI documentation
-- 🔍 **Search & Filter** - Real-time filtering by title, author, and category
+- 🛡️ **Basic Authentication** - Secure access to API endpoints.
+- 🚦 **Rate Limiting** - Protection against abuse using `slowapi`.
+- 🔒 **Concurrency Control** - Async locks to prevent race conditions during updates.
+- ⚡ **In-Memory Storage** - High-performance data handling with Python dictionaries.
+- 🚨 **Low Stock Alerts** - Caching mechanism for efficient alert retrieval.
 
 ---
 
@@ -21,7 +20,6 @@ A high-performance RESTful API built with FastAPI for managing a book collection
 
 ### Option 1: Using Docker (Recommended)
 
-**Using Docker Compose:**
 ```bash
 # Start the application
 docker-compose up -d --build
@@ -30,29 +28,11 @@ docker-compose up -d --build
 docker-compose down
 ```
 
-**Using Dockerfile:**
-```bash
-# Build the image
-docker build -t fastapi-product .
-
-# Run the container
-docker run -d -p 8000:8000 --name fastapi-product fastapi-product
-
-# View logs
-docker logs -f fastapi-product
-
-# Stop and remove
-docker stop fastapi-product
-docker rm fastapi-product
-```
-
-### Option 2: Running Locally (using uv)
+### Option 2: Running Locally
 
 ```bash
-# Create virtual environment
+# Create and activate virtual environment
 uv venv
-
-# Activate virtual environment
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 
 # Install dependencies
@@ -62,50 +42,43 @@ uv pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
-Visit **http://localhost:8000** to use the application.
+Visit **http://localhost:8000** to access the application.
+
+**Default Credentials:**
+- Username: `admin`
+- Password: `admin`
 
 ---
 
 ## 🔌 API Endpoints
 
-The API provides the following endpoints:
-
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/books` | Get all books |
-| `GET` | `/books/{title}` | Get book by title |
-| `GET` | `/books/` | Filter books by category |
-| `GET` | `/books/byauthor/` | Filter books by author |
-| `POST` | `/books/create_book` | Add a new book |
-| `PUT` | `/books/update_book` | Update an existing book |
-| `DELETE` | `/books/delete_book/{title}` | Delete a book |
-
-You can also explore the interactive API documentation at **http://localhost:8000/docs**.
+| `GET` | `/products` | List all products |
+| `GET` | `/products/{id}` | Get product details |
+| `POST` | `/products` | Create new product |
+| `PUT` | `/products/{id}` | Update product details |
+| `PATCH` | `/products/{id}/inventory` | Update stock quantity |
+| `DELETE` | `/products/{id}` | Delete product |
+| `GET` | `/products/alerts` | Get low stock alerts |
 
 ---
 
 ## 💻 Tech Stack
 
-- **Backend**: FastAPI, Uvicorn
-- **Frontend**: HTML5, CSS3 (Glassmorphism), Vanilla JavaScript
-- **Containerization**: Docker, Docker Compose
-- **Python**: 3.12+
+- **Backend**: FastAPI
+- **Security**: HTTP Basic Auth
+- **Rate Limiting**: SlowAPI
+- **Concurrency**: Asyncio Locks
 
 ## 📂 Project Structure
 
 ```
-project_1/
-├── main.py              # FastAPI application
-├── static/              # Frontend assets
-│   ├── index.html      # Main GUI
-│   ├── style.css       # Styles
-│   └── script.js       # Frontend logic
-├── Dockerfile          # Docker build instructions
-├── docker-compose.yml  # Docker services configuration
-├── requirements.txt    # Python dependencies
+project_7/
+├── main.py              # Main application logic
+├── static/              # Static assets
+├── Dockerfile          # Docker configuration
+├── docker-compose.yml  # Docker Compose setup
+├── requirements.txt    # Dependencies
 └── README.md           # Documentation
 ```
-
-## 📝 License
-
-This project is licensed under the MIT License.

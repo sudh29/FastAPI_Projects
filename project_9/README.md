@@ -1,5 +1,10 @@
 # Crypto Portfolio Tracker (Project 9)
 
+[![Python](https://img.shields.io/badge/Python-3.12%2B-blue.svg)](https://www.python.org/downloads/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.109.0-green.svg)](https://fastapi.tiangolo.com/)
+[![React](https://img.shields.io/badge/React-18-blue.svg)](https://react.dev/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 A full-stack cryptocurrency portfolio tracking application built with **FastAPI** (Backend) and **React + Vite** (Frontend).
 
 ## 🚀 Features
@@ -49,14 +54,16 @@ This is the easiest way to run the entire application.
     *   **Backend API Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
 
 
+    ```bash
     # Remove the existing containers manually
-docker rm -f crypto_backend crypto_frontend
+    docker rm -f crypto_backend crypto_frontend
 
-# Remove the build cache and orphans to be safe
-docker-compose down --volumes --remove-orphans
+    # Remove the build cache and orphans to be safe
+    docker-compose down --volumes --remove-orphans
 
-# Now rebuild and start fresh
-docker-compose up --build
+    # Now rebuild and start fresh
+    docker-compose up --build
+    ```
 
 ### Option 2: Using Python Script (Local)
 

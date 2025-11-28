@@ -1,19 +1,18 @@
-# FastAPI Books Manager
+# FastAPI Books API (Pydantic)
 
 [![Python](https://img.shields.io/badge/Python-3.12%2B-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109.0-green.svg)](https://fastapi.tiangolo.com/)
-[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A high-performance RESTful API built with FastAPI for managing a book collection, featuring a modern, responsive web interface.
+An enhanced RESTful API for managing a book collection, leveraging **Pydantic** models for robust data validation and **FastAPI** for high performance.
 
 ## 🌟 Highlights
 
-- 🚀 **High Performance** - Built on Starlette and Pydantic
-- 🎨 **Modern GUI** - Beautiful, responsive interface with glassmorphism design
-- 🐳 **Docker Ready** - Production-optimized Docker setup
-- 📄 **Interactive Docs** - Automatic Swagger UI documentation
-- 🔍 **Search & Filter** - Real-time filtering by title, author, and category
+- 🛡️ **Data Validation** - Strong typing and validation using Pydantic models.
+- 🆔 **ID-Based Management** - Manage books reliably using unique IDs.
+- 🔍 **Advanced Filtering** - Filter books by rating and publication date.
+- 📄 **Interactive Docs** - Automatic Swagger UI documentation.
+- 🐳 **Docker Ready** - Easy deployment with Docker Compose.
 
 ---
 
@@ -21,7 +20,6 @@ A high-performance RESTful API built with FastAPI for managing a book collection
 
 ### Option 1: Using Docker (Recommended)
 
-**Using Docker Compose:**
 ```bash
 # Start the application
 docker-compose up -d --build
@@ -30,29 +28,11 @@ docker-compose up -d --build
 docker-compose down
 ```
 
-**Using Dockerfile:**
-```bash
-# Build the image
-docker build -t fastapi-books-api .
-
-# Run the container
-docker run -d -p 8000:8000 --name fastapi-books-api fastapi-books-api
-
-# View logs
-docker logs -f fastapi-books-api
-
-# Stop and remove
-docker stop fastapi-books-api
-docker rm fastapi-books-api
-```
-
-### Option 2: Running Locally (using uv)
+### Option 2: Running Locally
 
 ```bash
-# Create virtual environment
+# Create and activate virtual environment
 uv venv
-
-# Activate virtual environment
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 
 # Install dependencies
@@ -62,7 +42,7 @@ uv pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
-Visit **http://localhost:8000** to use the application.
+Visit **http://localhost:8000** to see the application running.
 
 ---
 
@@ -72,40 +52,32 @@ The API provides the following endpoints:
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/books` | Get all books |
-| `GET` | `/books/{title}` | Get book by title |
-| `GET` | `/books/` | Filter books by category |
-| `GET` | `/books/byauthor/` | Filter books by author |
-| `POST` | `/books/create_book` | Add a new book |
+| `GET` | `/books` | Get all books (optional filters: `rating`, `published_date`) |
+| `GET` | `/books/{book_id}` | Get a specific book by ID |
+| `POST` | `/create-book` | Add a new book to the collection |
 | `PUT` | `/books/update_book` | Update an existing book |
-| `DELETE` | `/books/delete_book/{title}` | Delete a book |
+| `DELETE` | `/books/{book_id}` | Delete a book by ID |
 
-You can also explore the interactive API documentation at **http://localhost:8000/docs**.
+You can explore and test the API at **http://localhost:8000/docs**.
 
 ---
 
 ## 💻 Tech Stack
 
-- **Backend**: FastAPI, Uvicorn
-- **Frontend**: HTML5, CSS3 (Glassmorphism), Vanilla JavaScript
-- **Containerization**: Docker, Docker Compose
-- **Python**: 3.12+
+- **Framework**: FastAPI
+- **Validation**: Pydantic
+- **Server**: Uvicorn
+- **Language**: Python 3.12+
 
 ## 📂 Project Structure
 
 ```
-project_1/
-├── main.py              # FastAPI application
-├── static/              # Frontend assets
-│   ├── index.html      # Main GUI
-│   ├── style.css       # Styles
-│   └── script.js       # Frontend logic
+project_2/
+├── main.py              # FastAPI application with Pydantic models
+├── static/              # Frontend assets (if applicable)
+├── templates/           # Jinja2 templates (if applicable)
 ├── Dockerfile          # Docker build instructions
 ├── docker-compose.yml  # Docker services configuration
 ├── requirements.txt    # Python dependencies
 └── README.md           # Documentation
 ```
-
-## 📝 License
-
-This project is licensed under the MIT License.

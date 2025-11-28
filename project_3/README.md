@@ -1,65 +1,25 @@
-# Todo App (Project 3)
+# FastAPI Todo App
 
-A modern, full-stack Todo application built with FastAPI and vanilla JavaScript.
+[![Python](https://img.shields.io/badge/Python-3.12%2B-blue.svg)](https://www.python.org/downloads/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.109.0-green.svg)](https://fastapi.tiangolo.com/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-## Features
+A modern, full-stack Todo application built with **FastAPI** and **Vanilla JavaScript**, featuring a persistent SQLite database and a premium glassmorphism UI.
 
--   **FastAPI Backend**: Robust API with SQLite database integration using SQLAlchemy.
--   **Modern GUI**: Premium glassmorphism design with animated background blobs.
--   **Task Management**: Create, read, update, and delete tasks.
--   **Priority System**: Assign priorities (Low, Medium, High, Urgent, Critical) to tasks.
--   **Filtering**: Filter tasks by priority level.
--   **Responsive Design**: Works seamlessly on desktop and mobile devices.
+## 🌟 Highlights
 
-## Project Structure
+- 🗄️ **Persistent Storage** - SQLite database integration using SQLAlchemy ORM.
+- 🎨 **Modern GUI** - Beautiful, responsive interface with glassmorphism design and animations.
+- ⚡ **Full CRUD** - Create, Read, Update, and Delete tasks seamlessly.
+- 🏷️ **Priority System** - Organize tasks with priority levels (Low to Critical).
+- 🐳 **Docker Ready** - Easy deployment with Docker Compose.
 
--   `main.py`: The FastAPI application entry point.
--   `models.py`: SQLAlchemy database models.
--   `database.py`: Database configuration.
--   `templates/index.html`: The main HTML interface.
--   `static/style.css`: CSS styles for the glassmorphism UI.
--   `static/script.js`: Client-side logic for API interaction and DOM manipulation.
-
-## Setup and Installation
-
-1.  **Install Dependencies**:
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-2.  **Run the Application**:
-    ```bash
-    uvicorn main:app --reload
-    ```
-    Or simply:
-    ```bash
-    python main.py
-    ```
-
-3.  **Access the App**:
-    Open your browser and navigate to `http://127.0.0.1:8000`.
-
-## API Endpoints
-
--   `GET /`: Serves the main UI.
--   `GET /todos`: Fetch all todo items.
--   `GET /todo/{id}`: Fetch a specific todo item.
--   `POST /todo`: Create a new todo item.
--   `PUT /todo/{id}`: Update an existing todo item.
--   `DELETE /todo/{id}`: Delete a todo item.
-
-## Technologies Used
-
--   **Backend**: Python, FastAPI, SQLAlchemy, SQLite
--   **Frontend**: HTML5, CSS3, JavaScript (Vanilla)
--   **Design**: Glassmorphism, CSS Animations, Google Fonts (Outfit)
-
+---
 
 ## 🚀 Quick Start
 
 ### Option 1: Using Docker (Recommended)
 
-**Using Docker Compose:**
 ```bash
 # Start the application
 docker-compose up -d --build
@@ -68,18 +28,54 @@ docker-compose up -d --build
 docker-compose down
 ```
 
-**Using Dockerfile:**
+### Option 2: Running Locally
+
 ```bash
-# Build the image
-docker build -t fastapi-todo-app .
+# Create and activate virtual environment
+uv venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
 
-# Run the container
-docker run -d -p 8000:8000 --name fastapi-todo-app fastapi-todo-app
+# Install dependencies
+uv pip install -r requirements.txt
 
-# View logs
-docker logs -f fastapi-todo-app
+# Run the application
+uvicorn main:app --reload
+```
 
-# Stop and remove
-docker stop fastapi-todo-app
-docker rm fastapi-todo-app
+Visit **http://localhost:8000** to use the application.
+
+---
+
+## 🔌 API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/todos` | Fetch all todo items |
+| `GET` | `/todo/{id}` | Fetch a specific todo item |
+| `POST` | `/todo` | Create a new todo item |
+| `PUT` | `/todo/{id}` | Update an existing todo item |
+| `DELETE` | `/todo/{id}` | Delete a todo item |
+
+---
+
+## 💻 Tech Stack
+
+- **Backend**: FastAPI, Uvicorn, SQLAlchemy
+- **Frontend**: HTML5, CSS3 (Glassmorphism), Vanilla JavaScript
+- **Database**: SQLite
+- **Python**: 3.12+
+
+## 📂 Project Structure
+
+```
+project_3/
+├── main.py              # FastAPI application
+├── models.py            # SQLAlchemy models
+├── database.py          # Database configuration
+├── templates/           # HTML templates
+├── static/              # CSS and JS assets
+├── Dockerfile          # Docker build instructions
+├── docker-compose.yml  # Docker services configuration
+├── requirements.txt    # Python dependencies
+└── README.md           # Documentation
 ```
