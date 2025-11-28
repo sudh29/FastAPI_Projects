@@ -1,178 +1,204 @@
-# Import necessary FastAPI and Python modules
-from fastapi import FastAPI, HTTPException, status, Request, Depends
-from fastapi.responses import JSONResponse
-from fastapi.exceptions import RequestValidationError
-from pydantic import BaseModel
-from typing import List, Optional
-from slowapi import Limiter
-from slowapi.util import get_remote_address
-from slowapi.errors import RateLimitExceeded
-from fastapi.responses import PlainTextResponse
-from fastapi.security import HTTPBasic, HTTPBasicCredentials
-import secrets
-import logging
-import asyncio
+from typing import Optional, List
+from fastapi import FastAPI, Path, Query, HTTPException, Request
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel, Field
+from starlette import status
 
-# Initialize FastAPI app
-app = FastAPI(title="Project 2")
+app: FastAPI = FastAPI()
 
-# Set up basic logging for error tracking
-logging.basicConfig(level=logging.INFO)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
 
 
-# Define the Product data model using Pydantic
-class Product(BaseModel):
-    id: int  # Unique identifier for the product
-    name: str  # Name of the product
-    price: float  # Price of the product
-    description: Optional[str] = None  # Optional description
-
-
-# In-memory storage for products using a dictionary for O(1) access
-# Key: product id, Value: Product object
-db: dict[int, Product] = {}
-# Async lock to ensure concurrency safety for db operations
-db_lock = asyncio.Lock()
-
-# Set up rate limiting using slowapi (limits requests per IP)
-limiter = Limiter(key_func=get_remote_address)
-app.state.limiter = limiter
-
-# Set up HTTP Basic authentication
-security = HTTPBasic()
-# Demo credentials (in production, use a secure user store)
-USERNAME = "admin"
-PASSWORD = "admin"
-
-
-def authenticate(credentials: HTTPBasicCredentials = Depends(security)):
+class Book(BaseModel):
     """
-    Authenticate user using HTTP Basic Auth.
-    Raises 401 if credentials are invalid.
+    Represents a book with its details.
     """
-    correct_username = secrets.compare_digest(credentials.username, USERNAME)
-    correct_password = secrets.compare_digest(credentials.password, PASSWORD)
-    if not (correct_username and correct_password):
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid credentials",
-            headers={"WWW-Authenticate": "Basic"},
-        )
-    return credentials
+
+    id: int
+    title: str
+    author: str
+    description: str
+    rating: int
+    published_date: int
 
 
-# Global exception handler for unhandled errors
-@app.exception_handler(Exception)
-def global_exception_handler(request: Request, exc: Exception):
-    logging.error(f"Unhandled error: {exc}")
-    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
-
-
-# Exception handler for validation errors (e.g., invalid request body)
-@app.exception_handler(RequestValidationError)
-def validation_exception_handler(request: Request, exc: RequestValidationError):
-    return JSONResponse(status_code=422, content={"detail": exc.errors()})
-
-
-# Exception handler for rate limit exceeded
-@app.exception_handler(RateLimitExceeded)
-def rate_limit_handler(request: Request, exc: RateLimitExceeded):
-    return PlainTextResponse("Rate limit exceeded", status_code=429)
-
-
-# Endpoint: Get all products
-@app.get("/products", response_model=List[Product], status_code=status.HTTP_200_OK)
-@limiter.limit("5/minute")
-async def get_all_products(
-    request: Request, credentials: HTTPBasicCredentials = Depends(authenticate)
-):
+class BookRequest(BaseModel):
     """
-    Returns a list of all products in the database.
-    Requires authentication and is rate limited.
+    Pydantic model for book creation and update requests.
     """
-    async with db_lock:
-        return list(db.values())
+
+    id: Optional[int] = Field(description="ID is not needed on create", default=None)
+    title: str = Field(min_length=3)
+    author: str = Field(min_length=1)
+    description: str = Field(min_length=1, max_length=100)
+    rating: int = Field(gt=0, lt=6)
+    published_date: int = Field(gt=1999, lt=2031)
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "title": "A new book",
+                "author": "codingwithroby",
+                "description": "A new description of a book",
+                "rating": 5,
+                "published_date": 2029,
+            }
+        }
+    }
 
 
-# Endpoint: Get a single product by ID
-@app.get(
-    "/products/{product_id}", response_model=Product, status_code=status.HTTP_200_OK
-)
-@limiter.limit("5/minute")
-async def get_one_product(
-    request: Request,
-    product_id: int,
-    credentials: HTTPBasicCredentials = Depends(authenticate),
-):
-    """
-    Returns a single product by its ID.
-    Raises 404 if not found. Requires authentication and is rate limited.
-    """
-    async with db_lock:
-        product = db.get(product_id)
-        if product:
-            return product
-        raise HTTPException(status_code=404, detail="Product not found")
+BOOKS: List[Book] = [
+    Book(
+        id=1,
+        title="Computer Science Pro",
+        author="codingwithroby",
+        description="A very nice book!",
+        rating=5,
+        published_date=2030,
+    ),
+    Book(
+        id=2,
+        title="Be Fast with FastAPI",
+        author="codingwithroby",
+        description="A great book!",
+        rating=5,
+        published_date=2030,
+    ),
+    Book(
+        id=3,
+        title="Master Endpoints",
+        author="codingwithroby",
+        description="A awesome book!",
+        rating=5,
+        published_date=2029,
+    ),
+    Book(
+        id=4,
+        title="HP1",
+        author="Author 1",
+        description="Book Description",
+        rating=2,
+        published_date=2028,
+    ),
+    Book(
+        id=5,
+        title="HP2",
+        author="Author 2",
+        description="Book Description",
+        rating=3,
+        published_date=2027,
+    ),
+    Book(
+        id=6,
+        title="HP3",
+        author="Author 3",
+        description="Book Description",
+        rating=1,
+        published_date=2026,
+    ),
+]
 
 
-# Endpoint: Create a new product
-@app.post("/products", response_model=Product, status_code=status.HTTP_201_CREATED)
-@limiter.limit("5/minute")
-async def create_product(
-    request: Request,
-    product: Product,
-    credentials: HTTPBasicCredentials = Depends(authenticate),
-):
+@app.get("/", response_class=HTMLResponse)
+async def read_root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+
+@app.get("/books", status_code=status.HTTP_200_OK)
+async def read_all_books(
+    rating: Optional[int] = Query(None, gt=0, lt=6),
+    published_date: Optional[int] = Query(None, gt=1999, lt=2031),
+) -> List[Book]:
     """
-    Creates a new product. Product ID must be unique.
-    Raises 400 if product with the same ID exists.
-    Requires authentication and is rate limited.
+    Get all books in the collection, optionally filtered by rating or published date.
     """
-    async with db_lock:
-        if product.id in db:
-            raise HTTPException(
-                status_code=400, detail="Product with this ID already exists"
+    books_to_return = BOOKS
+
+    if rating is not None:
+        books_to_return = [book for book in books_to_return if book.rating == rating]
+
+    if published_date is not None:
+        books_to_return = [
+            book for book in books_to_return if book.published_date == published_date
+        ]
+
+    return books_to_return
+
+
+@app.get("/books/{book_id}", status_code=status.HTTP_200_OK)
+async def read_book(book_id: int = Path(gt=0)) -> Book:
+    """
+    Get a book by its ID.
+    """
+    for book in BOOKS:
+        if book.id == book_id:
+            return book
+    raise HTTPException(status_code=404, detail="Item not found")
+
+
+@app.post("/create-book", status_code=status.HTTP_201_CREATED)
+async def create_book(book_request: BookRequest) -> Book:
+    """
+    Create a new book and add it to the collection.
+    """
+    new_book = Book(**book_request.model_dump())
+    new_book = find_book_id(new_book)
+    BOOKS.append(new_book)
+    return new_book
+
+
+def find_book_id(book: Book) -> Book:
+    """
+    Assign a new ID to the book based on the last book in the collection.
+    """
+    book.id = 1 if len(BOOKS) == 0 else BOOKS[-1].id + 1
+    return book
+
+
+@app.put("/books/update_book", status_code=status.HTTP_204_NO_CONTENT)
+async def update_book(book_request: BookRequest) -> None:
+    """
+    Update an existing book in the collection.
+    """
+    book_changed = False
+    for i in range(len(BOOKS)):
+        if BOOKS[i].id == book_request.id:
+            # Create a new Book instance with the updated data
+            # We assume book_request contains all necessary fields
+            BOOKS[i] = Book(
+                id=book_request.id,
+                title=book_request.title,
+                author=book_request.author,
+                description=book_request.description,
+                rating=book_request.rating,
+                published_date=book_request.published_date,
             )
-        db[product.id] = product
-        return product
+            book_changed = True
+            break
+
+    if not book_changed:
+        raise HTTPException(status_code=404, detail="Item not found")
 
 
-# Endpoint: Update an existing product
-@app.put(
-    "/products/{product_id}", response_model=Product, status_code=status.HTTP_200_OK
-)
-@limiter.limit("5/minute")
-async def update_product(
-    request: Request,
-    product_id: int,
-    product: Product,
-    credentials: HTTPBasicCredentials = Depends(authenticate),
-):
+@app.delete("/books/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_book(book_id: int = Path(gt=0)) -> None:
     """
-    Updates an existing product by ID.
-    Raises 404 if product not found. Requires authentication and is rate limited.
+    Delete a book from the collection by ID.
     """
-    async with db_lock:
-        if product_id in db:
-            db[product_id] = product
-            return product
-        raise HTTPException(status_code=404, detail="Product not found")
+    book_changed = False
+    for i in range(len(BOOKS)):
+        if BOOKS[i].id == book_id:
+            BOOKS.pop(i)
+            book_changed = True
+            break
+    if not book_changed:
+        raise HTTPException(status_code=404, detail="Item not found")
 
 
-# Endpoint: Delete a product by ID
-@app.delete("/products/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
-@limiter.limit("5/minute")
-async def delete_product(
-    request: Request,
-    product_id: int,
-    credentials: HTTPBasicCredentials = Depends(authenticate),
-):
-    """
-    Deletes a product by its ID.
-    Raises 404 if product not found. Requires authentication and is rate limited.
-    """
-    async with db_lock:
-        if product_id in db:
-            del db[product_id]
-            return
-        raise HTTPException(status_code=404, detail="Product not found")
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app)

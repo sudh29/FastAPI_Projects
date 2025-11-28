@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo App | Premium Task Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>My Tasks</h1>
+            <p>Stay organized, focused, and get things done.</p>
+        </header>
+
+        <div class="add-todo-container glass-panel">
+            <form id="add-todo-form">
+                <div class="input-group">
+                    <input type="text" id="title" placeholder="What needs to be done?" required>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="description" placeholder="Description (optional)">
+                </div>
+                <div class="row">
+                    <div class="input-group">
+                        <label for="priority">Priority</label>
+                        <div class="priority-selector">
+                            <input type="radio" name="priority" id="p1" value="1"><label for="p1"
+                                class="p-btn p1">Low</label>
+                            <input type="radio" name="priority" id="p2" value="2"><label for="p2"
+                                class="p-btn p2">Med</label>
+                            <input type="radio" name="priority" id="p3" value="3" checked><label for="p3"
+                                class="p-btn p3">High</label>
+                            <input type="radio" name="priority" id="p4" value="4"><label for="p4"
+                                class="p-btn p4">Urg</label>
+                            <input type="radio" name="priority" id="p5" value="5"><label for="p5"
+                                class="p-btn p5">Crit</label>
+                        </div>
+                    </div>
+                    <button type="submit" class="add-btn">
+                        <i class="fas fa-plus"></i> Add Task
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="filter-container glass-panel">
+            <label style="color: var(--text-muted); font-size: 0.9rem;">Filter by Priority:</label>
+            <div class="filter-options">
+                <input type="radio" name="filter" id="f-all" value="all" checked>
+                <label for="f-all" class="filter-btn">All</label>
+
+                <input type="radio" name="filter" id="f-1" value="1">
+                <label for="f-1" class="filter-btn">Low</label>
+
+                <input type="radio" name="filter" id="f-2" value="2">
+                <label for="f-2" class="filter-btn">Med</label>
+
+                <input type="radio" name="filter" id="f-3" value="3">
+                <label for="f-3" class="filter-btn">High</label>
+
+                <input type="radio" name="filter" id="f-4" value="4">
+                <label for="f-4" class="filter-btn">Urg</label>
+
+                <input type="radio" name="filter" id="f-5" value="5">
+                <label for="f-5" class="filter-btn">Crit</label>
+            </div>
+        </div>
+
+        <div class="todo-list" id="todo-list">
+            <!-- Todos will be injected here -->
+            <div class="loading-state">
+                <div class="spinner"></div>
+                <p>Loading your tasks...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content glass-panel">
+            <span class="close-modal">&times;</span>
+            <h2>Edit Task</h2>
+            <form id="edit-todo-form">
+                <input type="hidden" id="edit-id">
+                <div class="input-group">
+                    <label>Title</label>
+                    <input type="text" id="edit-title" required>
+                </div>
+                <div class="input-group">
+                    <label>Description</label>
+                    <input type="text" id="edit-description">
+                </div>
+                <div class="input-group">
+                    <label>Priority</label>
+                    <div class="priority-selector">
+                        <input type="radio" name="edit-priority" id="ep1" value="1"><label for="ep1"
+                            class="p-btn p1">Low</label>
+                        <input type="radio" name="edit-priority" id="ep2" value="2"><label for="ep2"
+                            class="p-btn p2">Med</label>
+                        <input type="radio" name="edit-priority" id="ep3" value="3"><label for="ep3"
+                            class="p-btn p3">High</label>
+                        <input type="radio" name="edit-priority" id="ep4" value="4"><label for="ep4"
+                            class="p-btn p4">Urg</label>
+                        <input type="radio" name="edit-priority" id="ep5" value="5"><label for="ep5"
+                            class="p-btn p5">Crit</label>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="cancel-btn" id="cancel-edit">Cancel</button>
+                    <button type="submit" class="save-btn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/static/script.js?v=7"></script>
+</body>
+
+</html>

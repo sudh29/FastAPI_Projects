@@ -16,6 +16,6 @@ repos:
     hooks:
       # Run the linter
       - id: ruff
-        args: [--fix, --ignore=F405, F403]
+        args: [--fix]
       # Run the formatter (replaces isort)
       - id: ruff-format

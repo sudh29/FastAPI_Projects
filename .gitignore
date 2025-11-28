@@ -194,3 +194,6 @@ cython_debug/
 .cursorindexingignore
 
 *.db
+*.Zone.Identifier
+**/*Zone.Identifier
+.Zone.Identifier

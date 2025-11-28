@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project 7 - Inventory Management</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div id="app">
+        <!-- Login Screen -->
+        <div id="login-screen" class="screen active">
+            <div class="glass-panel login-panel">
+                <h1>Welcome Back</h1>
+                <p>Please sign in to continue</p>
+                <form id="login-form">
+                    <div class="input-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" placeholder="admin" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" placeholder="admin" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Sign In</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Dashboard Screen -->
+        <div id="dashboard-screen" class="screen">
+            <header class="glass-header">
+                <div class="logo">Project 7</div>
+                <div class="user-info">
+                    <span id="user-display">Admin</span>
+                    <button id="logout-btn" class="btn-text">Logout</button>
+                </div>
+            </header>
+
+            <main>
+                <div class="controls">
+                    <h2>Products</h2>
+                    <button id="add-product-btn" class="btn-primary">+ Add Product</button>
+                </div>
+
+                <div id="product-grid" class="grid">
+                    <!-- Products will be injected here -->
+                </div>
+            </main>
+        </div>
+
+        <!-- Modal -->
+        <div id="modal-overlay" class="overlay hidden">
+            <div class="glass-panel modal">
+                <h2 id="modal-title">Add Product</h2>
+                <form id="product-form">
+                    <input type="hidden" id="prod-id-hidden">
+                    <div class="input-group">
+                        <label for="prod-id">ID</label>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Toast Notification -->
+        <div id="toast" class="toast hidden"></div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+
+</html>

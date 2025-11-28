@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Books API Manager</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-book-open"></i> Books API Manager</h1>
+            <p style="color: var(--text-secondary);">Manage your book collection with style</p>
+        </header>
+
+        <div class="controls">
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Search by title..." oninput="filterBooks()">
+                <select id="categoryFilter" onchange="filterBooks()">
+                    <option value="">All Categories</option>
+                    <option value="science">Science</option>
+                    <option value="history">History</option>
+                    <option value="math">Math</option>
+                </select>
+            </div>
+            <button onclick="openModal('add')">
+                <i class="fas fa-plus"></i> Add Book
+            </button>
+            <button onclick="fetchAllBooks()" style="background: var(--card-bg); border: var(--glass-border);">
+                <i class="fas fa-sync"></i> Refresh
+            </button>
+        </div>
+
+        <div id="bookGrid" class="grid">
+            <!-- Books will be populated here -->
+        </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div id="bookModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add New Book</h2>
+                <button class="close-btn" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="bookForm" onsubmit="handleFormSubmit(event)">
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input type="text" id="title" required placeholder="Enter book title">
+                </div>
+                <div class="form-group">
+                    <label for="author">Author</label>
+                    <input type="text" id="author" required placeholder="Enter author name">
+                </div>
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <input type="text" id="category" required placeholder="Enter category (e.g., science)">
+                </div>
+                <div class="actions" style="margin-top: 2rem;">
+                    <button type="button" onclick="closeModal()" style="background: transparent; border: var(--glass-border);">Cancel</button>
+                    <button type="submit" id="submitBtn">Save Book</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
