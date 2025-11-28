@@ -8,7 +8,9 @@ Users can add money to their portfolio, buy/sell assets using live prices from B
 
 import requests
 import jwt
+import os
 from datetime import datetime
+from passlib.context import CryptContext
 
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,33 +19,46 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 
-from models import Base, User, Asset, Portfolio, Transaction
-from schemas import UserCreate, AddMoney, TradeAsset
+from .models import Base, User, Asset, Portfolio, Transaction
+from .schemas import UserCreate, AddMoney, TradeAsset
 
 app = FastAPI(title="Portfolio Tracker")
 
 # OAuth2 password flow
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+# Password hashing
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
+
+
 # Enable CORS for all origins
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=["*"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # SQLite database setup
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./crypto_portfolio.db")
 engine = create_engine(
-    "sqlite:///./crypto_portfolio.db", connect_args={"check_same_thread": False}
+    DATABASE_URL,
+    connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {},
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base.metadata.create_all(bind=engine)
 
 # Secret key for JWT encoding/decoding
-# SECRET_KEY = secrets.token_urlsafe(32)
-SECRET_KEY = "your_secret_key_here"
+SECRET_KEY = os.getenv("SECRET_KEY", "your_secret_key_here")
 
 
 def get_db():
@@ -87,11 +102,15 @@ def get_crypto_price(symbol: str) -> float:
     """
     try:
         response = requests.get(
-            f"https://api.binance.com/api/v3/ticker/price?symbol={symbol.upper()}USDT"
+            f"https://api.binance.com/api/v3/ticker/price?symbol={symbol.upper()}USDT",
+            timeout=5,
         )
+        response.raise_for_status()
         return float(response.json()["price"])
     except Exception as e:
         print(f"Error fetching price for {symbol}: {e}")
+        # Return a dummy price for development if API fails, or 0.0
+        # In a real app, you might want to cache the last known price
         return 0.0
 
 
@@ -103,7 +122,12 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     Returns:
         dict: Confirmation message.
     """
-    db_user = User(username=user.username, password=user.password)
+    existing_user = db.query(User).filter(User.username == user.username).first()
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Username already registered")
+
+    hashed_password = get_password_hash(user.password)
+    db_user = User(username=user.username, password=hashed_password)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
@@ -126,8 +150,8 @@ def login(
         dict: Access token and token type.
     """
     user = db.query(User).filter(User.username == form_data.username).first()
-    if not user or user.password != form_data.password:
-        raise HTTPException(status_code=400, detail="Information invalid")
+    if not user or not verify_password(form_data.password, user.password):
+        raise HTTPException(status_code=400, detail="Incorrect username or password")
 
     token = jwt.encode({"username": user.username}, SECRET_KEY, algorithm="HS256")
 
