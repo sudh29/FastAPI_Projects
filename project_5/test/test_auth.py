@@ -4,7 +4,7 @@ Tests for authentication-related functions and endpoints in the FastAPI applicat
 Covers user authentication, JWT token creation, and user retrieval from token.
 """
 
-from .utils import *
+from .utils import app, override_get_db, TestingSessionLocal
 from routers.auth import (
     get_db,
     authenticate_user,

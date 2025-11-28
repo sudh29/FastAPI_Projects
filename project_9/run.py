@@ -2,7 +2,7 @@ import subprocess
 import os
 import sys
 import time
-import signal
+
 
 def main():
     # Get absolute paths
@@ -18,11 +18,19 @@ def main():
         # Start Backend
         print("\n[Backend] Starting FastAPI server...")
         # We use sys.executable -m uvicorn to ensure we use the current python environment
-        backend_cmd = [sys.executable, "-m", "uvicorn", "app.main:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]
+        backend_cmd = [
+            sys.executable,
+            "-m",
+            "uvicorn",
+            "app.main:app",
+            "--reload",
+            "--host",
+            "0.0.0.0",
+            "--port",
+            "8000",
+        ]
         backend_proc = subprocess.Popen(
-            backend_cmd,
-            cwd=backend_dir,
-            env=os.environ.copy()
+            backend_cmd, cwd=backend_dir, env=os.environ.copy()
         )
         processes.append(backend_proc)
         print("✅ Backend started on http://localhost:8000")
@@ -33,16 +41,15 @@ def main():
         # On Windows/WSL, shell=True is often safest for npm
         frontend_cmd = "npm run dev"
         frontend_proc = subprocess.Popen(
-            frontend_cmd,
-            cwd=frontend_dir,
-            shell=True,
-            env=os.environ.copy()
+            frontend_cmd, cwd=frontend_dir, shell=True, env=os.environ.copy()
         )
         processes.append(frontend_proc)
-        print("✅ Frontend started (check output for URL, usually http://localhost:5173)")
+        print(
+            "✅ Frontend started (check output for URL, usually http://localhost:5173)"
+        )
 
         print("\n⚡ Both services are running. Press Ctrl+C to stop all services.\n")
-        
+
         # Wait for both processes
         while True:
             time.sleep(1)
@@ -69,6 +76,7 @@ def main():
                         p.kill()
                 except Exception as e:
                     print(f"Error stopping process: {e}")
+
 
 if __name__ == "__main__":
     main()

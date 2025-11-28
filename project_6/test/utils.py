@@ -13,6 +13,7 @@ from fastapi.testclient import TestClient
 import pytest
 from models import Todos, Users
 from routers.auth import bcrypt_context
+from typing import Generator
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./testdb.db"
 

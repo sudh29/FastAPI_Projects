@@ -4,7 +4,7 @@ Tests for user-related API endpoints in the FastAPI application.
 Covers user retrieval, password change, and phone number update functionality.
 """
 
-from .utils import *
+from .utils import app, client, override_get_current_user, override_get_db
 from routers.users import get_db, get_current_user
 from fastapi import status
 

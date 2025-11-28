@@ -4,7 +4,13 @@ Tests for admin-related API endpoints in the FastAPI application.
 Covers admin access to view and delete todos.
 """
 
-from .utils import *
+from .utils import (
+    app,
+    client,
+    override_get_current_user,
+    override_get_db,
+    TestingSessionLocal,
+)
 from routers.admin import get_db, get_current_user
 from fastapi import status
 from models import Todos
