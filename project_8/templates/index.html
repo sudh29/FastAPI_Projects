@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Master | Real-time Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <script src="https://unpkg.com/feather-icons"></script>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Inventory Master</h1>
+            <p style="color: var(--text-muted);">Real-time High Performance Inventory System</p>
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="card">
+                <h2>Total Products</h2>
+                <div class="stat-value" id="total-products">0</div>
+            </div>
+            <div class="card">
+                <h2>Low Stock Items</h2>
+                <div class="stat-value" id="low-stock">0</div>
+            </div>
+            <div class="card">
+                <h2>System Status</h2>
+                <div class="stat-value" style="color: var(--success); font-size: 1.5rem;">Operational</div>
+            </div>
+        </div>
+
+        <div class="inventory-section">
+            <div class="section-header">
+                <h2 style="font-size: 1.5rem; color: var(--text-main);">Product Inventory</h2>
+                <button class="btn" onclick="openModal()">
+                    <i data-feather="plus"></i> Add Product
+                </button>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Quantity</th>
+                        <th>Reserved</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="inventory-table">
+                    <!-- Data will be populated here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add Product Modal -->
+    <div class="modal" id="productModal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 1.5rem;">Add New Product</h2>
+            <form id="addProductForm" onsubmit="handleCreateProduct(event)">
+                <div class="form-group">
+                    <label>Product ID</label>
+                    <input type="text" name="id" required>
+                </div>
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select name="category">
+                        <option value="electronics">Electronics</option>
+                        <option value="clothing">Clothing</option>
+                        <option value="books">Books</option>
+                        <option value="food">Food</option>
+                        <option value="toys">Toys</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Quantity</label>
+                    <input type="number" name="quantity" required min="0">
+                </div>
+                <div class="actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn">Create Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- View Product Modal -->
+    <div class="modal" id="viewModal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 1.5rem;">Product Details</h2>
+            <div class="form-group">
+                <label>ID</label>
+                <div id="view-id" style="color: var(--text-main);"></div>
+            </div>
+            <div class="form-group">
+                <label>Name</label>
+                <div id="view-name" style="color: var(--text-main);"></div>
+            </div>
+            <div class="form-group">
+                <label>Category</label>
+                <div id="view-category" style="color: var(--text-main);"></div>
+            </div>
+            <div class="form-group">
+                <label>Quantity</label>
+                <div id="view-quantity" style="color: var(--text-main);"></div>
+            </div>
+            <div class="form-group">
+                <label>Reserved</label>
+                <div id="view-reserved" style="color: var(--text-main);"></div>
+            </div>
+            <div class="form-group">
+                <label>Last Updated</label>
+                <div id="view-updated" style="color: var(--text-main);"></div>
+            </div>
+            <div class="actions">
+                <button type="button" class="btn" onclick="closeViewModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        feather.replace();
+
+        // Fetch and display products
+        async function fetchProducts() {
+            try {
+                const response = await fetch('/products');
+                const products = await response.json();
+                renderTable(products);
+                updateStats(products);
+            } catch (error) {
+                console.error('Error fetching products:', error);
+            }
+        }
+
+        function renderTable(products) {
+            const tbody = document.getElementById('inventory-table');
+            tbody.innerHTML = products.map(p => `
+                <tr>
+                    <td>${p.id}</td>
+                    <td>${p.name}</td>
+                    <td><span class="badge badge-${p.category}">${p.category}</span></td>
+                    <td>${p.quantity}</td>
+                    <td>${p.reserved}</td>
+                    <td>
+                        <span style="color: ${p.quantity < 10 ? 'var(--error)' : 'var(--success)'}">
+                            ${p.quantity < 10 ? 'Low Stock' : 'In Stock'}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn-secondary" style="padding: 0.25rem 0.5rem;" onclick="viewProduct('${p.id}')">
+                            View
+                        </button>
+                        <button class="btn-secondary" style="padding: 0.25rem 0.5rem; color: var(--error); border-color: var(--error);" onclick="deleteProduct('${p.id}')">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateStats(products) {
+            document.getElementById('total-products').textContent = products.length;
+            document.getElementById('low-stock').textContent = products.filter(p => p.quantity < 10).length;
+        }
+
+        async function handleCreateProduct(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData.entries());
+
+            // Convert quantity to number
+            data.quantity = parseInt(data.quantity);
+
+            try {
+                const response = await fetch('/products', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    closeModal();
+                    event.target.reset();
+                    fetchProducts();
+                } else {
+                    const error = await response.json();
+                    alert('Error creating product: ' + (error.detail || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error creating product');
+            }
+        }
+
+        async function deleteProduct(id) {
+            if (!confirm('Are you sure you want to delete product ' + id + '?')) return;
+
+            try {
+                const response = await fetch('/products/' + id, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    fetchProducts();
+                } else {
+                    const error = await response.json();
+                    alert('Error deleting product: ' + (error.detail || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error deleting product');
+            }
+        }
+
+        async function viewProduct(id) {
+            try {
+                const response = await fetch('/products/' + id);
+                if (response.ok) {
+                    const product = await response.json();
+                    document.getElementById('view-id').textContent = product.id;
+                    document.getElementById('view-name').textContent = product.name;
+                    document.getElementById('view-category').textContent = product.category;
+                    document.getElementById('view-quantity').textContent = product.quantity;
+                    document.getElementById('view-reserved').textContent = product.reserved;
+                    document.getElementById('view-updated').textContent = new Date(product.last_updated).toLocaleString();
+                    document.getElementById('viewModal').style.display = 'flex';
+                } else {
+                    alert('Error fetching product details');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error fetching product details');
+            }
+        }
+
+        // Modal functions
+        function openModal() {
+            document.getElementById('productModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('productModal').style.display = 'none';
+        }
+
+        function closeViewModal() {
+            document.getElementById('viewModal').style.display = 'none';
+        }
+
+        // Initial load
+        fetchProducts();
+
+        // Poll for updates (simulating real-time)
+        setInterval(fetchProducts, 5000);
+    </script>
+</body>
+
+</html>

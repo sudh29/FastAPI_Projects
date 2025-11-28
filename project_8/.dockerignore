@@ -1,5 +1,5 @@
 # ==========================================
-# 🧠 Python / Flask
+# 🧠 Python / FastAPI
 # ==========================================
 __pycache__/
 *.pyc
@@ -55,7 +55,7 @@ Thumbs.db
 *.old
 
 # ==========================================
-# 🚀 Flask specific runtime files
+# 🚀 FastAPI specific runtime files
 # ==========================================
 instance/
 tmp/
